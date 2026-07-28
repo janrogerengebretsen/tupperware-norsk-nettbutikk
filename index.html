@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Tupperware Norsk Nettbutikk</title>
+  <link rel="preconnect" href="https://cdn.shopify.com">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="announcement">
+    <span>Offisielle norske produktdata</span>
+    <span>Priser i NOK</span>
+    <span>Direkte bestilling hos Tupperware</span>
+  </div>
+
+  <header class="site-header">
+    <button class="icon-button mobile-only" id="menuButton" aria-label="Åpne kategorier" title="Kategorier">
+      <i data-lucide="menu"></i>
+    </button>
+    <button class="brand" id="homeButton" aria-label="Vis alle produkter">
+      <span class="brand-mark">T</span>
+      <span>
+        <strong>Tupperware</strong>
+        <small>Norsk Nettbutikk</small>
+      </span>
+    </button>
+    <form class="search" id="searchForm" role="search">
+      <i data-lucide="search"></i>
+      <input id="searchInput" type="search" autocomplete="off"
+        placeholder="Søk etter produkt, artikkelnummer eller bruksområde"
+        aria-label="Søk i alle produkter">
+      <button class="clear-search" id="clearSearch" type="button" aria-label="Tøm søk" title="Tøm søk">
+        <i data-lucide="x"></i>
+      </button>
+    </form>
+    <a class="consultant-link" href="mailto:?subject=Bestilling%20av%20Tupperware" title="Send bestillingsforespørsel">
+      <i data-lucide="mail"></i>
+      <span>Bestill via meg</span>
+    </a>
+  </header>
+
+  <div class="mobile-search mobile-only">
+    <form class="search" id="mobileSearchForm" role="search">
+      <i data-lucide="search"></i>
+      <input id="mobileSearchInput" type="search" autocomplete="off"
+        placeholder="Søk etter produkt eller artikkelnummer"
+        aria-label="Søk i alle produkter">
+    </form>
+  </div>
+
+  <div class="app-shell">
+    <aside class="category-panel" id="categoryPanel" aria-label="Produktkategorier">
+      <div class="category-heading">
+        <span>Kategorier</span>
+        <button class="icon-button mobile-only" id="closeMenuButton" aria-label="Lukk kategorier" title="Lukk">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <nav id="categoryNav">
+        <div class="nav-skeleton"></div>
+        <div class="nav-skeleton short"></div>
+        <div class="nav-skeleton"></div>
+        <div class="nav-skeleton short"></div>
+      </nav>
+      <div class="advisor-note">
+        <i data-lucide="badge-check"></i>
+        <div>
+          <strong>Din Tupperware-konsulent</strong>
+          <span>Lisbeth Overbye</span>
+        </div>
+      </div>
+    </aside>
+    <button class="menu-backdrop" id="menuBackdrop" aria-label="Lukk kategorier"></button>
+
+    <main>
+      <section class="collection-banner" id="collectionBanner">
+        <div>
+          <p class="eyebrow">NORSK PRODUKTKATALOG</p>
+          <h1 id="pageTitle">Alle produkter</h1>
+          <p id="pageDescription">Finn Tupperware-produktet som passer hverdagen din.</p>
+        </div>
+        <div class="banner-art" aria-hidden="true">
+          <i data-lucide="package-open"></i>
+        </div>
+      </section>
+
+      <section class="subcategory-strip" id="subcategoryStrip" aria-label="Underkategorier"></section>
+
+      <div class="toolbar">
+        <div>
+          <strong id="resultCount">Laster produkter ...</strong>
+          <span id="activeFilter"></span>
+        </div>
+        <label class="sort-control">
+          <span>Sorter</span>
+          <select id="sortSelect">
+            <option value="featured">Anbefalt</option>
+            <option value="title">Navn A–Å</option>
+            <option value="price-asc">Laveste pris</option>
+            <option value="price-desc">Høyeste pris</option>
+            <option value="sale">Størst rabatt</option>
+          </select>
+          <i data-lucide="chevron-down"></i>
+        </label>
+      </div>
+
+      <section class="product-grid" id="productGrid" aria-live="polite">
+        <div class="product-skeleton"></div>
+        <div class="product-skeleton"></div>
+        <div class="product-skeleton"></div>
+        <div class="product-skeleton"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="product-dialog" id="productDialog">
+    <div class="dialog-shell">
+      <button class="dialog-close icon-button" id="dialogClose" aria-label="Lukk produkt" title="Lukk">
+        <i data-lucide="x"></i>
+      </button>
+      <div id="dialogContent"></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>

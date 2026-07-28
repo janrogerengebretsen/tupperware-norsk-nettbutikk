@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: tupperware-norsk-nettbutikk
+    runtime: python
+    plan: free
+    buildCommand: echo Ready
+    startCommand: python server.py
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit

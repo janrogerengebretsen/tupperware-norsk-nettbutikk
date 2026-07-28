@@ -173,7 +173,7 @@ function productCard(product) {
           <button class="icon-button" data-detail="${escapeHtml(product.handle)}" aria-label="Vis produktdetaljer" title="Produktdetaljer">
             <i data-lucide="eye"></i>
           </button>
-          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-shop" rel="noopener">
+          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-official-store">
             Se i nettbutikken <i data-lucide="external-link"></i>
           </a>
         </div>
@@ -311,7 +311,7 @@ function detailMarkup(product) {
         </div>
         <p class="detail-description">${escapeHtml(product.description || "Produktbeskrivelse kommer fra Tupperwares norske produktside.")}</p>
         <div class="detail-actions">
-          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-shop" rel="noopener">
+          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-official-store">
             Åpne produktet hos Tupperware <i data-lucide="external-link"></i>
           </a>
           <button class="icon-button copy-link" data-copy="${escapeHtml(product.url)}" aria-label="Kopier produktlenke" title="Kopier produktlenke">

@@ -1,3 +1,21 @@
+const DEFAULT_CONSULTANT_REF = "LISBETHOVERBYE";
+const DEFAULT_CONSULTANT_NAME = "Lisbeth Overbye";
+const pageParams = new URLSearchParams(window.location.search);
+
+function cleanConsultantRef(value) {
+  const cleaned = String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
+  return cleaned.slice(0, 80) || DEFAULT_CONSULTANT_REF;
+}
+
+function cleanConsultantName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").slice(0, 80);
+}
+
+const consultantRef = cleanConsultantRef(pageParams.get("ref"));
+const suppliedConsultantName = cleanConsultantName(pageParams.get("consultant"));
+const consultantName = suppliedConsultantName
+  || (consultantRef === DEFAULT_CONSULTANT_REF ? DEFAULT_CONSULTANT_NAME : "valgt konsulent");
+
 const state = {
   collections: [],
   activeGroup: null,
@@ -33,6 +51,9 @@ const els = {
   dialogContent: document.querySelector("#dialogContent"),
   dialogClose: document.querySelector("#dialogClose"),
   toast: document.querySelector("#toast"),
+  consultantName: document.querySelector("#consultantName"),
+  consultantRef: document.querySelector("#consultantRef"),
+  sidebarConsultantName: document.querySelector("#sidebarConsultantName"),
 };
 
 const descriptions = {
@@ -59,6 +80,18 @@ function formatNok(value) {
     minimumFractionDigits: Number(value) % 1 ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(Number(value || 0));
+}
+
+function productUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname === "tupperware-eu.com" || url.hostname.endsWith(".tupperware-eu.com")) {
+      url.searchParams.set("ref", consultantRef);
+    }
+    return url.toString();
+  } catch {
+    return value;
+  }
 }
 
 function discountPercent(product) {
@@ -149,6 +182,7 @@ function updateHeading() {
 function productCard(product) {
   const discount = discountPercent(product);
   const isNew = product.tags.some(tag => tag.toLowerCase() === "new");
+  const shopUrl = productUrl(product.url);
   return `
     <article class="product-card" data-handle="${escapeHtml(product.handle)}">
       <div class="product-badges">
@@ -173,7 +207,7 @@ function productCard(product) {
           <button class="icon-button" data-detail="${escapeHtml(product.handle)}" aria-label="Vis produktdetaljer" title="Produktdetaljer">
             <i data-lucide="eye"></i>
           </button>
-          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-official-store">
+          <a class="shop-button" href="${escapeHtml(shopUrl)}" target="tupperware-official-store">
             Se i nettbutikken <i data-lucide="external-link"></i>
           </a>
         </div>
@@ -286,6 +320,7 @@ function runSearch(value) {
 function detailMarkup(product) {
   const discount = discountPercent(product);
   const images = product.images.length ? product.images : [""];
+  const shopUrl = productUrl(product.url);
   return `
     <div class="detail-layout">
       <div class="detail-gallery">
@@ -311,10 +346,10 @@ function detailMarkup(product) {
         </div>
         <p class="detail-description">${escapeHtml(product.description || "Produktbeskrivelse kommer fra Tupperwares norske produktside.")}</p>
         <div class="detail-actions">
-          <a class="shop-button" href="${escapeHtml(product.url)}" target="tupperware-official-store">
+          <a class="shop-button" href="${escapeHtml(shopUrl)}" target="tupperware-official-store">
             Åpne produktet hos Tupperware <i data-lucide="external-link"></i>
           </a>
-          <button class="icon-button copy-link" data-copy="${escapeHtml(product.url)}" aria-label="Kopier produktlenke" title="Kopier produktlenke">
+          <button class="icon-button copy-link" data-copy="${escapeHtml(shopUrl)}" aria-label="Kopier produktlenke" title="Kopier produktlenke">
             <i data-lucide="link"></i>
           </button>
         </div>
@@ -338,6 +373,9 @@ async function openProduct(handle) {
 }
 
 async function init() {
+  els.consultantName.textContent = consultantName;
+  els.consultantRef.textContent = `Ref. ${consultantRef}`;
+  els.sidebarConsultantName.textContent = consultantName;
   try {
     const payload = await fetchJson("/api/navigation");
     state.collections = payload.collections;

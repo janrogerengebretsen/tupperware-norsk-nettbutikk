@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
   <title>Tupperware Norsk Nettbutikk</title>
+  <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://cdn.shopify.com">
   <link rel="stylesheet" href="/styles.css">
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
@@ -12,9 +13,9 @@
 </head>
 <body>
   <div class="announcement">
-    <span>Offisielle norske produktdata</span>
-    <span>Priser i NOK</span>
-    <span>Direkte bestilling hos Tupperware</span>
+    <i data-lucide="badge-check"></i>
+    <span>Du handler med Tupperware-konsulent <strong>Lisbeth Overbye</strong></span>
+    <small>Ref. LISBETHOVERBYE</small>
   </div>
 
   <header class="site-header">
@@ -114,6 +115,11 @@
         <div class="product-skeleton"></div>
         <div class="product-skeleton"></div>
       </section>
+      <div class="load-more-wrap">
+        <button class="load-more" id="loadMoreButton" type="button" hidden>
+          Vis flere produkter <i data-lucide="chevron-down"></i>
+        </button>
+      </div>
     </main>
   </div>
 

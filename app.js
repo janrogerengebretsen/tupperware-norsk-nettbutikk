@@ -5,6 +5,8 @@ const state = {
   query: "",
   sort: "featured",
   request: 0,
+  offset: 0,
+  total: 0,
 };
 
 const els = {
@@ -26,6 +28,7 @@ const els = {
   resultCount: document.querySelector("#resultCount"),
   activeFilter: document.querySelector("#activeFilter"),
   productGrid: document.querySelector("#productGrid"),
+  loadMoreButton: document.querySelector("#loadMoreButton"),
   productDialog: document.querySelector("#productDialog"),
   dialogContent: document.querySelector("#dialogContent"),
   dialogClose: document.querySelector("#dialogClose"),
@@ -204,11 +207,25 @@ function renderError(error) {
   refreshIcons();
 }
 
-async function loadProducts() {
+function pageSize() {
+  return window.matchMedia("(max-width: 820px)").matches ? 24 : 48;
+}
+
+async function loadProducts({ append = false } = {}) {
   const request = ++state.request;
-  renderLoading();
+  if (!append) {
+    state.offset = 0;
+    renderLoading();
+  } else {
+    els.loadMoreButton.disabled = true;
+    els.loadMoreButton.textContent = "Laster flere ...";
+  }
   updateHeading();
-  const params = new URLSearchParams({ sort: state.sort });
+  const params = new URLSearchParams({
+    sort: state.sort,
+    offset: String(state.offset),
+    limit: String(pageSize()),
+  });
   if (state.activeCollection) params.set("collection", state.activeCollection);
   if (state.query) {
     params.delete("collection");
@@ -217,12 +234,28 @@ async function loadProducts() {
   try {
     const payload = await fetchJson(`/api/products?${params}`);
     if (request !== state.request) return;
+    state.total = payload.count;
     els.resultCount.textContent = `${payload.count} ${payload.count === 1 ? "produkt" : "produkter"}`;
-    if (!payload.products.length) return renderEmpty();
-    els.productGrid.innerHTML = payload.products.map(productCard).join("");
+    if (!payload.products.length && !append) {
+      els.loadMoreButton.hidden = true;
+      return renderEmpty();
+    }
+    const cards = payload.products.map(productCard).join("");
+    if (append) {
+      els.productGrid.insertAdjacentHTML("beforeend", cards);
+    } else {
+      els.productGrid.innerHTML = cards;
+    }
+    state.offset += payload.products.length;
+    els.loadMoreButton.hidden = state.offset >= payload.count;
+    els.loadMoreButton.disabled = false;
+    els.loadMoreButton.innerHTML = `Vis flere produkter <i data-lucide="chevron-down"></i>`;
     refreshIcons();
   } catch (error) {
-    if (request === state.request) renderError(error);
+    if (request === state.request) {
+      els.loadMoreButton.hidden = true;
+      renderError(error);
+    }
   }
 }
 
@@ -365,6 +398,8 @@ els.sortSelect.addEventListener("change", () => {
   state.sort = els.sortSelect.value;
   loadProducts();
 });
+
+els.loadMoreButton.addEventListener("click", () => loadProducts({ append: true }));
 
 els.homeButton.addEventListener("click", () => chooseCollection("", ""));
 els.menuButton.addEventListener("click", () => document.body.classList.add("menu-open"));

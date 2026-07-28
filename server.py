@@ -333,6 +333,11 @@ class Handler(BaseHTTPRequestHandler):
                 collection = clean_text((query.get("collection") or [""])[0])
                 search = search_key((query.get("q") or [""])[0])
                 sort = clean_text((query.get("sort") or ["featured"])[0])
+                try:
+                    offset = max(0, int((query.get("offset") or ["0"])[0]))
+                    limit = min(96, max(1, int((query.get("limit") or ["48"])[0])))
+                except ValueError:
+                    offset, limit = 0, 48
                 products = get_products(collection)
                 if search:
                     words = [word for word in search.split() if word]
@@ -359,12 +364,16 @@ class Handler(BaseHTTPRequestHandler):
                             ),
                         )
                     )
+                total = len(products)
+                products = products[offset : offset + limit]
                 return self.json_response(
                     200,
                     {
                         "products": products,
-                        "count": len(products),
+                        "count": total,
                         "collection": collection,
+                        "offset": offset,
+                        "hasMore": offset + len(products) < total,
                     },
                 )
             except Exception as error:
@@ -387,7 +396,16 @@ class Handler(BaseHTTPRequestHandler):
         }
         item = filenames.get(path)
         if not item:
-            return self.json_response(404, {"error": "Fant ikke siden."})
+            if path.startswith("/api/"):
+                return self.json_response(404, {"error": "Fant ikke endepunktet."})
+            if path == "/favicon.ico":
+                self.send_response(204)
+                self.end_headers()
+                return
+            if "." not in Path(path).name:
+                item = ("index.html", "text/html; charset=utf-8")
+            else:
+                return self.json_response(404, {"error": "Fant ikke filen."})
         filename, content_type = item
         body = (ROOT / filename).read_bytes()
         self.send_response(200)

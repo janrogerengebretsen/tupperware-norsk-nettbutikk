@@ -44,6 +44,14 @@ button { color: inherit; }
   font-weight: 600;
 }
 
+.announcement.invalid {
+  background: #9f2f2f;
+}
+
+.announcement.unverified {
+  background: #8a5a18;
+}
+
 .announcement svg { width: 17px; height: 17px; color: var(--yellow); }
 .announcement strong { color: #ffffff; }
 .announcement small { color: #cfe8e3; font-size: 11px; }

@@ -21,3 +21,6 @@ https://tupperware-norsk-nettbutikk.onrender.com/?ref=DINREFERANSE&consultant=Di
 ```
 
 `consultant` er valgfri og brukes i konsulentlinjen øverst.
+Katalogen kontrollerer referansen mot Tupperwares offentlige konsulenttjeneste
+og henter konsulentens registrerte fulle navn automatisk. Ved ugyldig referanse
+vises et varsel, og produktlenkene sendes uten konsulentreferanse.

@@ -20,6 +20,8 @@ APP_PORT = int(os.environ.get("PORT", "8789"))
 BASE_URL = "https://tupperware-eu.com"
 SHOP_PATH = "/no"
 CONSULTANT_REF = "LISBETHOVERBYE"
+CONSULTANT_API_URL = "https://api-server-3.goaffpro.com/v1/sdk/affiliate"
+CONSULTANT_SHOP = "tupp-shop.myshopify.com"
 ROOT = Path(__file__).resolve().parent
 NODE_EXE = shutil.which("node") or os.path.expanduser(
     r"~\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe"
@@ -194,6 +196,35 @@ def cached(key, loader):
     return value
 
 
+def get_consultant(consultant_ref):
+    consultant_ref = clean_text(consultant_ref)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", consultant_ref):
+        return {"found": False, "ref": consultant_ref}
+
+    def load():
+        query = urlencode(
+            {
+                "ref_code": consultant_ref,
+                "fields": "ref_code,id,name,first_name,last_name",
+                "x-shop": CONSULTANT_SHOP,
+            }
+        )
+        payload = json.loads(fetch_url(f"{CONSULTANT_API_URL}?{query}", timeout=15))
+        if payload.get("error") or not payload.get("ref_code"):
+            return {"found": False, "ref": consultant_ref}
+        name = clean_text(
+            payload.get("name")
+            or f"{payload.get('first_name', '')} {payload.get('last_name', '')}"
+        )
+        return {
+            "found": True,
+            "ref": clean_text(payload.get("ref_code")),
+            "name": name,
+        }
+
+    return cached(f"consultant:{consultant_ref.lower()}", load)
+
+
 def fetch_paginated_products(collection=""):
     products = []
     if collection:
@@ -316,6 +347,15 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/health":
             return self.json_response(200, {"ok": True})
+        if path == "/api/consultant":
+            consultant_ref = clean_text((query.get("ref") or [""])[0])
+            try:
+                return self.json_response(200, get_consultant(consultant_ref))
+            except Exception as error:
+                return self.json_response(
+                    502,
+                    {"error": f"Kunne ikke kontrollere konsulentreferansen: {error}"},
+                )
         if path == "/api/navigation":
             try:
                 return self.json_response(

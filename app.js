@@ -11,10 +11,11 @@ function cleanConsultantName(value) {
   return String(value || "").trim().replace(/\s+/g, " ").slice(0, 80);
 }
 
-const consultantRef = cleanConsultantRef(pageParams.get("ref"));
+const requestedConsultantRef = cleanConsultantRef(pageParams.get("ref"));
 const suppliedConsultantName = cleanConsultantName(pageParams.get("consultant"));
-const consultantName = suppliedConsultantName
-  || (consultantRef === DEFAULT_CONSULTANT_REF ? DEFAULT_CONSULTANT_NAME : "valgt konsulent");
+let activeConsultantRef = requestedConsultantRef;
+let consultantName = suppliedConsultantName
+  || (requestedConsultantRef === DEFAULT_CONSULTANT_REF ? DEFAULT_CONSULTANT_NAME : "valgt konsulent");
 
 const state = {
   collections: [],
@@ -53,6 +54,7 @@ const els = {
   toast: document.querySelector("#toast"),
   consultantName: document.querySelector("#consultantName"),
   consultantRef: document.querySelector("#consultantRef"),
+  consultantBanner: document.querySelector("#consultantBanner"),
   sidebarConsultantName: document.querySelector("#sidebarConsultantName"),
 };
 
@@ -86,11 +88,46 @@ function productUrl(value) {
   try {
     const url = new URL(value);
     if (url.hostname === "tupperware-eu.com" || url.hostname.endsWith(".tupperware-eu.com")) {
-      url.searchParams.set("ref", consultantRef);
+      if (activeConsultantRef) {
+        url.searchParams.set("ref", activeConsultantRef);
+      } else {
+        url.searchParams.delete("ref");
+      }
     }
     return url.toString();
   } catch {
     return value;
+  }
+}
+
+function showConsultant(name, refText, status = "") {
+  consultantName = name;
+  els.consultantName.textContent = name;
+  els.consultantRef.textContent = refText;
+  els.sidebarConsultantName.textContent = name;
+  els.consultantBanner.classList.toggle("invalid", status === "invalid");
+  els.consultantBanner.classList.toggle("unverified", status === "unverified");
+}
+
+async function loadConsultant() {
+  showConsultant("Kontrollerer konsulent ...", `Ref. ${requestedConsultantRef}`);
+  try {
+    const payload = await fetchJson(`/api/consultant?ref=${encodeURIComponent(requestedConsultantRef)}`);
+    if (!payload.found) {
+      activeConsultantRef = "";
+      showConsultant("Konsulentreferansen finnes ikke", `Ugyldig ref. ${requestedConsultantRef}`, "invalid");
+      return;
+    }
+    activeConsultantRef = payload.ref;
+    showConsultant(payload.name || suppliedConsultantName || "Tupperware-konsulent", `Ref. ${payload.ref}`);
+  } catch {
+    activeConsultantRef = requestedConsultantRef;
+    showConsultant(
+      suppliedConsultantName
+        || (requestedConsultantRef === DEFAULT_CONSULTANT_REF ? DEFAULT_CONSULTANT_NAME : "valgt konsulent"),
+      `Ref. ${requestedConsultantRef} kunne ikke kontrolleres`,
+      "unverified",
+    );
   }
 }
 
@@ -373,9 +410,7 @@ async function openProduct(handle) {
 }
 
 async function init() {
-  els.consultantName.textContent = consultantName;
-  els.consultantRef.textContent = `Ref. ${consultantRef}`;
-  els.sidebarConsultantName.textContent = consultantName;
+  await loadConsultant();
   try {
     const payload = await fetchJson("/api/navigation");
     state.collections = payload.collections;

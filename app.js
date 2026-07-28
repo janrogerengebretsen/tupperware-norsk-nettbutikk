@@ -56,6 +56,9 @@ const els = {
   consultantRef: document.querySelector("#consultantRef"),
   consultantBanner: document.querySelector("#consultantBanner"),
   sidebarConsultantName: document.querySelector("#sidebarConsultantName"),
+  inAppWarning: document.querySelector("#inAppWarning"),
+  copyCatalogLink: document.querySelector("#copyCatalogLink"),
+  closeInAppWarning: document.querySelector("#closeInAppWarning"),
 };
 
 const descriptions = {
@@ -145,6 +148,44 @@ function showToast(message) {
   els.toast.classList.add("show");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 2600);
+}
+
+function isMetaInAppBrowser() {
+  const userAgent = navigator.userAgent || navigator.vendor || "";
+  return /FBAN|FBAV|FB_IAB|Messenger|Instagram/i.test(userAgent)
+    || pageParams.get("inapp-preview") === "1";
+}
+
+function catalogShareUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("inapp-preview");
+  return url.toString();
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const input = document.createElement("textarea");
+  input.value = value;
+  input.setAttribute("readonly", "");
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand("copy");
+  input.remove();
+}
+
+function setupInAppWarning() {
+  if (!isMetaInAppBrowser()) return;
+  try {
+    if (sessionStorage.getItem("inAppWarningDismissed") === "1") return;
+  } catch {
+    // The warning still works when storage is unavailable.
+  }
+  els.inAppWarning.hidden = false;
 }
 
 async function fetchJson(url) {
@@ -479,6 +520,24 @@ els.menuButton.addEventListener("click", () => document.body.classList.add("menu
 els.closeMenuButton.addEventListener("click", () => document.body.classList.remove("menu-open"));
 els.menuBackdrop.addEventListener("click", () => document.body.classList.remove("menu-open"));
 
+els.copyCatalogLink.addEventListener("click", async () => {
+  try {
+    await copyText(catalogShareUrl());
+    showToast("Kataloglenken er kopiert. Lim den inn i Chrome eller Safari.");
+  } catch {
+    showToast("Kunne ikke kopiere lenken. Bruk menyen og velg ekstern nettleser.");
+  }
+});
+
+els.closeInAppWarning.addEventListener("click", () => {
+  els.inAppWarning.hidden = true;
+  try {
+    sessionStorage.setItem("inAppWarningDismissed", "1");
+  } catch {
+    // Dismissal still applies until the page is reloaded.
+  }
+});
+
 els.productGrid.addEventListener("click", event => {
   const button = event.target.closest("[data-detail]");
   if (button) openProduct(button.dataset.detail);
@@ -503,4 +562,5 @@ els.dialogContent.addEventListener("click", async event => {
   }
 });
 
+setupInAppWarning();
 init();

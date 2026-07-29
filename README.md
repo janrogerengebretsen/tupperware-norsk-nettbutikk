@@ -1,4 +1,4 @@
-# Tupperware Norsk Nettbutikk
+# Tupperware Norsk Nettkatalog
 
 En norsk produktkatalog som henter samlinger, produktdata, bilder,
 NOK-priser og tilgjengelighet fra Tupperwares norske butikksider.

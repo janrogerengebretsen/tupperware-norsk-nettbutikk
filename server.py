@@ -467,7 +467,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     server = ThreadingHTTPServer((APP_HOST, APP_PORT), Handler)
-    print(f"Tupperware Norsk Nettbutikk kjører på http://127.0.0.1:{APP_PORT}/")
+    print(f"Tupperware Norsk Nettkatalog kjører på http://127.0.0.1:{APP_PORT}/")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
